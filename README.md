@@ -25,7 +25,7 @@ Abra o arquivo `dashboard.html` no Chrome com CORS desabilitado:
 
 | Funcionalidade | Descrição |
 |---|---|
-| 📋 Listar sessões | Ver todas as 149+ sessões WAHA com status |
+| 📋 Listar sessões | Ver todas as sessões WAHA com status |
 | 🔗 Integrar sessão | Conectar uma sessão WAHA a uma inbox Chatwoot |
 | ✏️ Trocar inbox | Alterar a inbox Chatwoot de uma sessão existente |
 | ➕ Nova sessão | Criar sessão WAHA + inbox Chatwoot automaticamente |
