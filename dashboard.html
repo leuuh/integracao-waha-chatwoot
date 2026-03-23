@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAHA ↔ Chatwoot — Integração</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--accent2:#1f6feb;--green:#3fb950;--green-bg:rgba(63,185,80,.12);--red:#f85149;--red-bg:rgba(248,81,73,.12);--yellow:#d29922;--yellow-bg:rgba(210,153,34,.12);--purple:#bc8cff;--purple-bg:rgba(188,140,255,.15);--radius:12px;--radius-sm:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#0d1117,#161b36);border-bottom:1px solid var(--border);padding:18px 28px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.logo{width:40px;height:40px;background:linear-gradient(135deg,#25d366,#128c7e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.htitle{font-size:19px;font-weight:700}.hsub{font-size:12px;color:var(--muted);margin-top:2px}
+.spacer{flex:1}
+.hbtn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .2s}
+.hbtn:hover{background:var(--border)}
+.stats{display:flex;gap:14px;padding:18px 28px;flex-wrap:wrap}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;flex:1;min-width:130px;display:flex;align-items:center;gap:12px;transition:border-color .2s}
+.stat:hover{border-color:var(--accent2)}
+.stat-icon{font-size:22px}.stat-num{font-size:26px;font-weight:800;line-height:1}.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.main{display:flex;gap:0;padding:0 28px 28px}
+.left{flex:1;min-width:0}.right{width:350px;padding-left:22px;flex-shrink:0}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-title{font-size:15px;font-weight:600}
+.sec-count{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:12px;color:var(--muted)}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.search{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s}
+.search::placeholder{color:var(--muted)}.search:focus{border-color:var(--accent2)}
+.fbtn{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:var(--radius-sm);padding:9px 12px;font-size:12px;font-family:inherit;cursor:pointer;transition:all .2s;white-space:nowrap}
+.fbtn:hover,.fbtn.active{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.slist{display:flex;flex-direction:column;gap:7px;max-height:calc(100vh - 300px);overflow-y:auto;padding-right:3px}
+.slist::-webkit-scrollbar{width:4px}.slist::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer}
+.scard:hover{border-color:var(--accent2);background:var(--surface2)}
+.scard.sel{border-color:var(--accent);background:rgba(88,166,255,.06)}
+.scard.integrated{border-left:3px solid var(--green)}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.sname{font-size:13px;font-weight:600}.sphone{font-size:11px;color:var(--muted);margin-top:1px}
+.sinfo{flex:1;min-width:0}
+.inbox-tag{font-size:10px;color:var(--purple);background:var(--purple-bg);border-radius:4px;padding:2px 5px;margin-top:3px;display:inline-block}
+.sacts{display:flex;gap:7px;align-items:center;flex-shrink:0}
+.badge{font-size:10px;font-weight:600;padding:3px 7px;border-radius:20px;white-space:nowrap}
+.bw{background:var(--green-bg);color:var(--green)}.bf{background:var(--red-bg);color:var(--red)}
+.bs{background:var(--yellow-bg);color:var(--yellow)}.bn{background:var(--surface2);color:var(--muted)}
+.bi{background:var(--purple-bg);color:var(--purple)}
+.ibtn{background:linear-gradient(135deg,var(--accent2),#388bfd);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 12px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;white-space:nowrap}
+.ibtn:hover{opacity:.85;transform:translateY(-1px)}.ibtn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.ibtn.swap{background:linear-gradient(135deg,#8957e5,#bc8cff)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.flabel{font-size:11px;color:var(--muted);margin-bottom:5px;display:block}
+.finput,.fselect{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s;margin-bottom:12px}
+.finput:focus,.fselect:focus{border-color:var(--accent2)}.fselect option{background:var(--surface2)}
+.fcheck{display:flex;align-items:center;gap:7px;margin-bottom:12px;font-size:12px;cursor:pointer}
+.fcheck input{accent-color:var(--accent)}
+.btn-p{width:100%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:var(--radius-sm);padding:11px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s}
+.btn-p:hover{opacity:.9;transform:translateY(-1px)}.btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-s{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px;font-size:12px;font-family:inherit;cursor:pointer;transition:all .2s;margin-top:7px}
+.btn-s:hover{background:var(--border)}
+.dname{font-size:16px;font-weight:700}.dmeta{font-size:11px;color:var(--muted);margin-top:3px}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.toast-c{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:7px;z-index:1000}
+.toast{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:12px;max-width:340px;animation:sIn .3s ease}
+.toast.ok{border-color:var(--green)}.toast.err{border-color:var(--red)}
+@keyframes sIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+.loading{display:flex;align-items:center;justify-content:center;padding:50px;flex-direction:column;gap:14px;color:var(--muted);font-size:13px}
+.spin{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.cors-warn{background:rgba(210,153,34,.1);border:1px solid var(--yellow);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;font-size:12px;color:var(--yellow);display:none}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">📱</div>
+  <div><div class="htitle">WAHA ↔ Chatwoot</div><div class="hsub">Painel de Integração Automática</div></div>
+  <div class="spacer"></div>
+  <button class="hbtn" onclick="loadAll()"><span id="ri">↻</span> Atualizar</button>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-icon">📡</div><div><div class="stat-num" id="s-total">—</div><div class="stat-lbl">Total Sessões</div></div></div>
+  <div class="stat"><div class="stat-icon">✅</div><div><div class="stat-num" id="s-work" style="color:var(--green)">—</div><div class="stat-lbl">Ativas</div></div></div>
+  <div class="stat"><div class="stat-icon">❌</div><div><div class="stat-num" id="s-fail" style="color:var(--red)">—</div><div class="stat-lbl">Com Falha</div></div></div>
+  <div class="stat"><div class="stat-icon">🔗</div><div><div class="stat-num" id="s-integ" style="color:var(--purple)">—</div><div class="stat-lbl">Integradas</div></div></div>
+  <div class="stat"><div class="stat-icon">📬</div><div><div class="stat-num" id="s-inbox" style="color:var(--accent)">—</div><div class="stat-lbl">Inboxes Chatwoot</div></div></div>
+</div>
+
+<div class="main">
+  <div class="left">
+    <div id="cors-warn" class="cors-warn">
+      ⚠️ <strong>Erro de CORS detectado.</strong> Execute <code>iniciar.bat</code> para usar o servidor local e resolver este problema.
+    </div>
+    <div class="sec-hdr">
+      <div class="sec-title">Sessões WAHA</div>
+      <div class="sec-count" id="scount">—</div>
+      <div class="spacer"></div>
+      <button class="fbtn active" id="f-all" onclick="setFilter('all')">Todas</button>
+      <button class="fbtn" id="f-work" onclick="setFilter('work')">Ativas</button>
+      <button class="fbtn" id="f-fail" onclick="setFilter('fail')">Falha</button>
+      <button class="fbtn" id="f-integ" onclick="setFilter('integ')">Integradas</button>
+      <button class="fbtn" id="f-pend" onclick="setFilter('pend')">Pendentes</button>
+    </div>
+    <div class="toolbar">
+      <input class="search" type="text" id="srch" placeholder="🔍  Buscar sessão..." oninput="render()">
+    </div>
+    <div id="slist-c"><div class="loading"><div class="spin"></div>Carregando sessões...</div></div>
+  </div>
+
+  <div class="right">
+    <div class="card" id="dpane" style="display:none">
+      <div class="card-title">⚡ Integrar Sessão</div>
+      <div id="dinfo"></div>
+      <hr class="divider">
+      <label class="flabel">Inbox no Chatwoot</label>
+      <select class="fselect" id="sel-inbox" onchange="onInboxChange()">
+        <option value="">➕ Criar nova inbox automaticamente</option>
+      </select>
+      <div id="newinbox-g">
+        <label class="flabel">Nome da nova inbox</label>
+        <input class="finput" type="text" id="newinbox-name" placeholder="Ex: WhatsApp - Suporte">
+      </div>
+      <button class="btn-p" id="btn-integ" onclick="doIntegrate()">🔗 Integrar agora</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">➕ Nova Sessão + Integração</div>
+      <label class="flabel">Nome da sessão</label>
+      <input class="finput" type="text" id="ns-name" placeholder="Ex: Suporte01">
+      <label class="flabel">Nome da inbox (opcional)</label>
+      <input class="finput" type="text" id="ns-inbox" placeholder="Deixe vazio para usar o mesmo nome">
+      <label class="fcheck"><input type="checkbox" id="ns-auto" checked>Integrar com Chatwoot automaticamente</label>
+      <button class="btn-p" id="btn-create" onclick="createSession()">➕ Criar e Integrar</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Ações em Massa</div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px">Integra todas as sessões WORKING que ainda não têm inbox no Chatwoot.</p>
+      <button class="btn-s" id="btn-bulk" onclick="bulkIntegrate()">🔗 Integrar todas as ativas sem inbox</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-c" id="toastc"></div>
+
+<script>
+// ─── Mode: proxy (Flask) vs direct (file://) ──────────────────────────────────
+const USE_PROXY = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+// Direct API credentials (used as fallback when running statically)
+// IMPORTANTE: Preencha com os seus dados se não for usar o servidor Python local
+const WAHA_URL  = 'http://endereco-do-seu-waha';
+const WAHA_KEY  = 'sua-chave-api-waha';
+const WAHA_USER = 'seu-usuario-se-houver';
+const WAHA_PASS = 'sua-senha-se-houver';
+const CW_URL    = 'http://endereco-do-seu-chatwoot';
+const CW_TOKEN  = 'seu-token-api-chatwoot';
+const CW_ACCT   = 1;
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let sessions = [], inboxes = [], selected = null, filter = 'all', simMap = {};
+
+// ─── API helpers ──────────────────────────────────────────────────────────────
+const wahaHdrs = () => ({
+  'X-Api-Key': WAHA_KEY,
+  'Content-Type': 'application/json',
+  'Authorization': 'Basic ' + btoa(WAHA_USER + ':' + WAHA_PASS),
+});
+const cwHdrs = () => ({ 'api_access_token': CW_TOKEN, 'Content-Type': 'application/json' });
+
+async function getSessions() {
+  if (USE_PROXY) {
+    const r = await fetch('/api/waha/sessions');
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    return Array.isArray(d.sessions) ? d.sessions : (Array.isArray(d) ? d : []);
+  }
+  const r = await fetch(WAHA_URL + '/api/sessions?all=true', { headers: wahaHdrs() });
+  if (!r.ok) throw new Error('WAHA ' + r.status);
+  const d = await r.json();
+  return Array.isArray(d) ? d : (d.sessions || []);
+}
+
+async function getInboxes() {
+  if (USE_PROXY) {
+    const r = await fetch('/api/chatwoot/inboxes');
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    return d.inboxes || [];
+  }
+  const r = await fetch(CW_URL + '/api/v1/accounts/' + CW_ACCT + '/inboxes', { headers: cwHdrs() });
+  if (!r.ok) throw new Error('CW ' + r.status);
+  return (await r.json()).payload || [];
+}
+
+async function callIntegrate(sessionName, inboxId, inboxName) {
+  if (USE_PROXY) {
+    const r = await fetch('/api/integrate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session: sessionName, inbox_id: inboxId || null, inbox_name: inboxName }),
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Erro');
+    return d;
+  }
+  // Direct (file:// mode)
+  return integrateDirect(sessionName, inboxId, inboxName);
+}
+
+async function callCreateSession(name, inboxName, autoI) {
+  if (USE_PROXY) {
+    const r = await fetch('/api/session/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, inbox_name: inboxName, auto_integrate: autoI }),
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Erro');
+    return d;
+  }
+  // Direct
+  const r = await fetch(WAHA_URL + '/api/sessions', {
+    method: 'POST', headers: wahaHdrs(), body: JSON.stringify({ name }),
+  });
+  if (!r.ok) throw new Error('WAHA POST ' + r.status);
+  let integ = false, inboxId = null;
+  if (autoI) {
+    const res = await integrateDirect(name, null, inboxName || name);
+    integ = true; inboxId = res.inbox_id;
+  }
+  return { ok: true, integrated: integ, inbox_id: inboxId };
+}
+
+// ─── Direct integration logic ─────────────────────────────────────────────────
+async function wGet(path) {
+  const r = await fetch(WAHA_URL + path, { headers: wahaHdrs() });
+  if (!r.ok) throw new Error('WAHA ' + r.status + ': ' + await r.text());
+  return r.json();
+}
+async function wPut(path, body) {
+  const r = await fetch(WAHA_URL + path, { method:'PUT', headers: wahaHdrs(), body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('WAHA PUT ' + r.status + ': ' + await r.text());
+  return r.text().then(t => t ? JSON.parse(t) : {});
+}
+async function cwPost(path, body) {
+  const r = await fetch(CW_URL + path, { method:'POST', headers: cwHdrs(), body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('CW POST ' + r.status + ': ' + await r.text());
+  return r.json();
+}
+
+async function integrateDirect(sessionName, inboxId, inboxName) {
+  let rId = inboxId, rName = inboxName || sessionName;
+  if (!rId) {
+    const inbox = await cwPost('/api/v1/accounts/' + CW_ACCT + '/inboxes', {
+      name: rName, channel: { type: 'api' },
+    });
+    rId = inbox.id; rName = inbox.name; inboxes.push(inbox);
+  } else {
+    const f = inboxes.find(i => i.id === parseInt(rId));
+    if (f) rName = f.name;
+  }
+  try {
+    await wPut('/api/sessions/' + sessionName + '/chatwoot', {
+      enabled: true, url: CW_URL, token: CW_TOKEN, account: CW_ACCT, inboxId: rId,
+    });
+  } catch(e) {
+    let sess = {}; try { sess = await wGet('/api/sessions/' + sessionName); } catch {}
+    let hooks = ((sess.config || {}).webhooks || []).filter(w =>
+      !(typeof w === 'object' && (w.url || '').includes('chatwoot'))
+    );
+    hooks.push({ url: CW_URL + '/webhooks/inbox/' + sessionName,
+      events: ['message.any','session.status','message.reaction','message.revoked'] });
+    await wPut('/api/sessions/' + sessionName, { config: { webhooks: hooks } });
+  }
+  simMap[sessionName] = inboxes.find(i => i.id === rId) || { id: rId, name: rName };
+  return { inbox_id: rId, inbox_name: rName };
+}
+
+// ─── Load & Map ───────────────────────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById('ri').style.animation = 'rot 1s linear infinite';
+  document.getElementById('slist-c').innerHTML = '<div class="loading"><div class="spin"></div>Carregando...</div>';
+  try {
+    const [sess, inbox] = await Promise.all([getSessions(), getInboxes()]);
+    sessions = sess; inboxes = inbox;
+    buildMap(); updateStats(); render(); renderInboxSel();
+    document.getElementById('cors-warn').style.display = 'none';
+  } catch(e) {
+    if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError'))
+      document.getElementById('cors-warn').style.display = 'block';
+    document.getElementById('slist-c').innerHTML =
+      '<div class="empty">⚠️ Erro: ' + e.message + '<br><small>Verifique o console.</small></div>';
+    console.error(e);
+  }
+  document.getElementById('ri').style.animation = '';
+}
+
+function buildMap() {
+  simMap = {};
+  for (const inbox of inboxes) {
+    const iN = inbox.name.toLowerCase().replace(/[\s_-]/g, '');
+    for (const s of sessions) {
+      const sN = s.name.toLowerCase().replace(/[\s_-]/g, '');
+      if (!simMap[s.name] && (iN === sN || iN.includes(sN) || sN.includes(iN)))
+        simMap[s.name] = inbox;
+    }
+  }
+}
+
+function updateStats() {
+  document.getElementById('s-total').textContent = sessions.length;
+  document.getElementById('s-work').textContent  = sessions.filter(s => s.status === 'WORKING').length;
+  document.getElementById('s-fail').textContent  = sessions.filter(s => s.status === 'FAILED').length;
+  document.getElementById('s-integ').textContent = sessions.filter(s => simMap[s.name]).length;
+  document.getElementById('s-inbox').textContent = inboxes.length;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function setFilter(f) {
+  filter = f;
+  ['all','work','fail','integ','pend'].forEach(x =>
+    document.getElementById('f-' + x).classList.toggle('active', x === f));
+  render();
+}
+
+function render() {
+  const q = document.getElementById('srch').value.toLowerCase();
+  let list = sessions.filter(s => {
+    const m = !q || s.name.toLowerCase().includes(q) ||
+      (s.me && s.me.pushname && s.me.pushname.toLowerCase().includes(q)) ||
+      (s.me && s.me.id && s.me.id.toLowerCase().includes(q));
+    const integ = !!simMap[s.name];
+    if (!m) return false;
+    if (filter === 'work')  return s.status === 'WORKING';
+    if (filter === 'fail')  return s.status === 'FAILED' || s.status === 'STOPPED';
+    if (filter === 'integ') return integ;
+    if (filter === 'pend')  return !integ;
+    return true;
+  });
+  document.getElementById('scount').textContent = list.length;
+  if (!list.length) {
+    document.getElementById('slist-c').innerHTML = '<div class="empty">🔍 Nenhuma sessão encontrada</div>';
+    return;
+  }
+  list.sort((a,b) => {
+    const aw = a.status === 'WORKING' ? 0 : 1, bw = b.status === 'WORKING' ? 0 : 1;
+    return aw !== bw ? aw - bw : a.name.localeCompare(b.name);
+  });
+  const cont = document.createElement('div');
+  cont.className = 'slist';
+  const colors = ['#1f6feb','#388bfd','#8957e5','#d29922','#3fb950','#f78166','#e3b341'];
+  for (const s of list) {
+    const inbox = simMap[s.name];
+    const isI = !!inbox;
+    const bc = {WORKING:'bw',FAILED:'bf',STARTING:'bs',STOPPED:'bn'}[s.status] || 'bn';
+    const col = colors[s.name.charCodeAt(0) % colors.length];
+    const ini = s.name.slice(0, 2).toUpperCase();
+    const phone = s.me && s.me.id ? s.me.id.replace('@c.us', '') : '';
+    const push  = s.me && s.me.pushname ? s.me.pushname : '';
+    const card = document.createElement('div');
+    card.className = 'scard' + (isI ? ' integrated' : '') + (selected === s.name ? ' sel' : '');
+    card.id = 'c-' + s.name;
+    card.onclick = () => selectSess(s.name);
+    card.innerHTML =
+      '<div class="avatar" style="background:' + col + '22;color:' + col + '">' + ini + '</div>' +
+      '<div class="sinfo">' +
+        '<div class="sname">' + s.name + '</div>' +
+        '<div class="sphone">' + (push ? push + ' · ' : '') + (phone || '—') + '</div>' +
+        (inbox ? '<span class="inbox-tag">📬 ' + inbox.name + '</span>' : '') +
+      '</div>' +
+      '<div class="sacts">' +
+        '<span class="badge ' + bc + '">' + s.status + '</span>' +
+        (isI
+          ? '<button class="ibtn swap" onclick="event.stopPropagation();selectSess(\'' + s.name + '\')">✏️ Trocar</button>'
+          : '<button class="ibtn" onclick="event.stopPropagation();quickInt(\'' + s.name + '\',event)">🔗 Integrar</button>') +
+      '</div>';
+    cont.appendChild(card);
+  }
+  document.getElementById('slist-c').replaceChildren(cont);
+}
+
+function renderInboxSel() {
+  const sel = document.getElementById('sel-inbox');
+  sel.innerHTML = '<option value="">➕ Criar nova inbox automaticamente</option>';
+  for (const i of inboxes) {
+    const o = document.createElement('option');
+    o.value = i.id; o.textContent = i.name + ' (ID ' + i.id + ')';
+    sel.appendChild(o);
+  }
+}
+function onInboxChange() {
+  document.getElementById('newinbox-g').style.display =
+    document.getElementById('sel-inbox').value ? 'none' : 'block';
+}
+
+// ─── Selection ────────────────────────────────────────────────────────────────
+function selectSess(name) {
+  selected = name;
+  document.querySelectorAll('.scard').forEach(c => c.classList.remove('sel'));
+  const card = document.getElementById('c-' + name);
+  if (card) card.classList.add('sel');
+  const s = sessions.find(x => x.name === name);
+  const inbox = simMap[name];
+  const dpane = document.getElementById('dpane');
+  dpane.style.display = 'block';
+  const bc = {WORKING:'bw',FAILED:'bf',STARTING:'bs',STOPPED:'bn'}[s.status] || 'bn';
+  document.getElementById('dinfo').innerHTML =
+    '<div class="dname">' + s.name + '</div>' +
+    '<div class="dmeta">' + (s.me && s.me.pushname ? s.me.pushname : '') +
+      (s.me && s.me.id ? ' · ' + s.me.id.replace('@c.us','') : '') + '</div>' +
+    '<div style="margin-top:8px"><span class="badge ' + bc + '">' + s.status + '</span>' +
+      (inbox ? ' <span class="badge bi">🔗 Integrado</span>' : '') + '</div>' +
+    (inbox ? '<div style="font-size:11px;color:var(--muted);margin-top:8px">Inbox atual: <b style="color:var(--text)">' + inbox.name + '</b> (ID ' + inbox.id + ')</div>' : '');
+  document.getElementById('newinbox-name').value = s.name;
+  if (inbox) {
+    document.getElementById('sel-inbox').value = inbox.id;
+    document.getElementById('newinbox-g').style.display = 'none';
+  } else {
+    document.getElementById('sel-inbox').value = '';
+    document.getElementById('newinbox-g').style.display = 'block';
+  }
+  dpane.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+async function quickInt(name, ev) {
+  const btn = ev.target;
+  btn.disabled = true; btn.textContent = '⏳...';
+  try {
+    const r = await callIntegrate(name, null, name);
+    simMap[name] = { id: r.inbox_id, name: r.inbox_name };
+    toast('✅ ' + name + ' integrado! Inbox: ' + r.inbox_name, 'ok');
+    updateStats(); render();
+  } catch(e) { toast('❌ ' + e.message, 'err'); console.error(e); }
+  btn.disabled = false; btn.textContent = '🔗 Integrar';
+}
+
+async function doIntegrate() {
+  if (!selected) return;
+  const inboxId   = document.getElementById('sel-inbox').value;
+  const inboxName = document.getElementById('newinbox-name').value.trim() || selected;
+  const btn = document.getElementById('btn-integ');
+  btn.disabled = true; btn.textContent = '⏳ Integrando...';
+  try {
+    const r = await callIntegrate(selected, inboxId ? parseInt(inboxId) : null, inboxName);
+    const obj = inboxes.find(i => i.id === r.inbox_id) || { id: r.inbox_id, name: r.inbox_name };
+    simMap[selected] = obj;
+    if (!inboxes.find(i => i.id === r.inbox_id)) { inboxes.push(obj); renderInboxSel(); }
+    toast('✅ ' + selected + ' integrado com inbox "' + r.inbox_name + '"', 'ok');
+    updateStats(); render(); selectSess(selected);
+  } catch(e) { toast('❌ ' + e.message, 'err'); console.error(e); }
+  btn.disabled = false; btn.textContent = '🔗 Integrar agora';
+}
+
+async function createSession() {
+  const name  = document.getElementById('ns-name').value.trim();
+  const inbox = document.getElementById('ns-inbox').value.trim() || name;
+  const autoI = document.getElementById('ns-auto').checked;
+  if (!name) { toast('⚠️ Informe o nome da sessão', 'err'); return; }
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true; btn.textContent = '⏳ Criando...';
+  try {
+    const r = await callCreateSession(name, inbox, autoI);
+    sessions.push({ name, status: 'STOPPED', me: null });
+    if (r.integrated && r.inbox_id) simMap[name] = { id: r.inbox_id, name: inbox };
+    toast(autoI ? '✅ Sessão "' + name + '" criada e integrada!' : '✅ Sessão "' + name + '" criada.', 'ok');
+    document.getElementById('ns-name').value = '';
+    document.getElementById('ns-inbox').value = '';
+    updateStats(); render(); renderInboxSel();
+  } catch(e) { toast('❌ ' + e.message, 'err'); console.error(e); }
+  btn.disabled = false; btn.textContent = '➕ Criar e Integrar';
+}
+
+async function bulkIntegrate() {
+  const pending = sessions.filter(s => s.status === 'WORKING' && !simMap[s.name]);
+  if (!pending.length) { toast('ℹ️ Todas as sessões ativas já estão integradas!', 'ok'); return; }
+  const btn = document.getElementById('btn-bulk');
+  btn.disabled = true;
+  let done = 0, errs = 0;
+  for (const s of pending) {
+    btn.textContent = '⏳ ' + (done+errs) + '/' + pending.length + '...';
+    try {
+      const r = await callIntegrate(s.name, null, s.name);
+      simMap[s.name] = { id: r.inbox_id, name: r.inbox_name };
+      done++;
+    } catch(e) { console.error(s.name, e); errs++; }
+  }
+  toast('✅ Concluído: ' + done + ' integradas, ' + errs + ' erros de ' + pending.length + '.', errs ? 'err' : 'ok');
+  btn.disabled = false;
+  btn.textContent = '🔗 Integrar todas as ativas sem inbox';
+  updateStats(); render();
+}
+
+function toast(msg, type) {
+  const c = document.getElementById('toastc');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || 'ok'); t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 5500);
+}
+
+loadAll();
+</script>
+</body>
+</html>
