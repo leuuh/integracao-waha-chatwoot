@@ -6,17 +6,22 @@ echo   WAHA ^<-^> Chatwoot  Painel de Integração
 echo  ================================================
 echo.
 
-:: Caminho do Python 3.12 instalado
-set PYTHON=C:\Users\Leonardo\AppData\Local\Programs\Python\Python312\python.exe
-
-:: Verificar se Python existe no caminho padrão
-if not exist "%PYTHON%" (
-    echo  [!] Python nao encontrado em %PYTHON%
-    echo  [!] Tentando instalar via winget...
-    winget install Python.Python.3.12 -e --silent --accept-package-agreements --accept-source-agreements
-    echo  [!] Reinicie este script apos a instalacao.
-    pause
-    exit /b 1
+:: Verificar se Python existe no PATH
+python --version >nul 2>&1
+if %errorlevel% equ 0 (
+    set PYTHON=python
+) else (
+    py --version >nul 2>&1
+    if %errorlevel% equ 0 (
+        set PYTHON=py
+    ) else (
+        echo  [!] Python nao encontrado no PATH da maquina.
+        echo  [!] Tentando instalar via winget...
+        winget install Python.Python.3.12 -e --silent --accept-package-agreements --accept-source-agreements
+        echo  [!] Reinicie este script apos a instalacao. Se o problema persistir, instale o Python manualmente e adicione-o ao PATH.
+        pause
+        exit /b 1
+    )
 )
 
 :: Instalar dependências
